@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
  */
 @Slf4j
 @Repository
-public class MonitoringEventRepositoryImpl implements MonitoringEventRepository {
+public class MonitoringEventCounterRepositoryImpl implements MonitoringEventCounterRepository {
 
     /**
      * Таблица gift_task.

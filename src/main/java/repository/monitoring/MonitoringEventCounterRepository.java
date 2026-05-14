@@ -3,7 +3,7 @@ import java.time.LocalDateTime;
 /**
  * Репозиторий подсчёта событий для мониторинговых задач.
  */
-public interface MonitoringEventRepository {
+public interface MonitoringEventCounterRepository {
 
     long count(
             MonitoringTaskDefinition definition,

@@ -18,7 +18,7 @@ public abstract class AbstractMonitoringTaskService
         extends BaseTaskService<GiftsScheduledTaskEnum, MonitoringTaskParameter> {
 
     private final MonitoringPeriodResolver periodResolver;
-    private final MonitoringEventRepository monitoringEventRepository;
+    private final MonitoringEventCounterRepository monitoringEventRepository;
     private final MonitoringNotificationService notificationService;
 
     protected abstract MonitoringTaskDefinition getDefinition();

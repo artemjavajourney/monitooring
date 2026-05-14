@@ -11,7 +11,7 @@ public class MechanicsVspManagerMonitoringTaskService extends AbstractMonitoring
 
     public MechanicsVspManagerMonitoringTaskService(
             MonitoringPeriodResolver periodResolver,
-            MonitoringEventRepository monitoringEventRepository,
+            MonitoringEventCounterRepository monitoringEventRepository,
             MonitoringNotificationService notificationService
     ) {
         super(periodResolver, monitoringEventRepository, notificationService);

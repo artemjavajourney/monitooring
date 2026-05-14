@@ -11,7 +11,7 @@ public class CasesMonitoringTaskService extends AbstractMonitoringTaskService {
 
     public CasesMonitoringTaskService(
             MonitoringPeriodResolver periodResolver,
-            MonitoringEventRepository monitoringEventRepository,
+            MonitoringEventCounterRepository monitoringEventRepository,
             MonitoringNotificationService notificationService
     ) {
         super(periodResolver, monitoringEventRepository, notificationService);
