@@ -27,7 +27,7 @@ public class MonitoringNotificationService {
     ) {
         String subject = params.getSubject() != null
                 ? params.getSubject()
-                : DEFAULT_ALERT_SUBJECT + ": " + definition.getFlowName();
+                : DEFAULT_ALERT_SUBJECT + ": " + definition.displayName();
 
         String body = """
                 Поток "%s" на момент проверки %s работает некорректно.
@@ -41,15 +41,15 @@ public class MonitoringNotificationService {
                 counterType: %s
                 filterValue: %s
                 """.formatted(
-                definition.getFlowName(),
+                definition.displayName(),
                 checkTime,
                 period.getFrom(),
                 period.getTo(),
                 params.getMinEventCount(),
                 actualCount,
-                definition.getTaskEnum(),
-                definition.getCounterType(),
-                definition.getFilterValue()
+                definition.taskType(),
+                definition.counterType(),
+                definition.filters()
         );
 
         emailSender.send(params.getRecipients(), subject, body);
@@ -74,19 +74,19 @@ public class MonitoringNotificationService {
                 counterType: %s
                 filterValue: %s
                 """.formatted(
-                definition.getFlowName(),
+                definition.displayName(),
                 checkTime,
                 period.getFrom(),
                 period.getTo(),
                 actualCount,
-                definition.getTaskEnum(),
-                definition.getCounterType(),
-                definition.getFilterValue()
+                definition.taskType(),
+                definition.counterType(),
+                definition.filters()
         );
 
         emailSender.send(
                 params.getRecipients(),
-                DEFAULT_RECOVERY_SUBJECT + ": " + definition.getFlowName(),
+                DEFAULT_RECOVERY_SUBJECT + ": " + definition.displayName(),
                 body
         );
     }
