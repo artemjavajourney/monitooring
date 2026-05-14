@@ -1,0 +1,1061 @@
+"public abstract class ScheduledTask<T extends Enum<T>> implements ScheduledTaskGetter<T> { 
+    private final ScheduledTaskGetter<T> propsModel;
+
+    public ScheduledTask(ScheduledTaskGetter<T> getter) {
+        this.propsModel = getter;
+    }
+
+    public ExecutionResultModel<T> errorResult(Throwable e) {
+        ExecutionResultModel<T> result = new ExecutionResultModel();
+        String var10001 = e.getClass().getSimpleName();
+        result.setResultMessage("Возникла ошибка обработки задачи " + var10001 + " " + e.getMessage());
+        result.setResult(ExecutionTaskResultStatus.ERROR);
+        result.setTaskType(this.propsModel.getTaskType());
+        result.setNextExecutionTime(LocalDateTime.now().plusMinutes(5L));
+        result.setParams(this.getParams());
+        return result;
+    }
+
+    public LocalDateTime calculateNextExecutionTime(ExecutionResultModel<T> resultModel) {
+        return this.propsModel.getTaskTimeType().getNextExecutionTime(resultModel, this.propsModel.getTimeParameter());
+    }
+
+    public TimeTaskType getTaskTimeType() {
+        return this.propsModel.getTaskTimeType();
+    }
+
+    public T getTaskType() {
+        return (T)this.propsModel.getTaskType();
+    }
+
+    public String getParams() {
+        return this.propsModel.getParams();
+    }
+
+    public String getTimeParameter() {
+        return this.propsModel.getTimeParameter();
+    }
+
+    @Generated
+    public ScheduledTaskGetter<T> getPropsModel() {
+        return this.propsModel;
+    }
+}"
+"public interface ScheduledTaskGetter<T extends Enum<T>> {
+    TimeTaskType getTaskTimeType();
+
+    T getTaskType();
+
+    String getTimeParameter();
+
+    String getParams();
+}
+"
+
+"public interface FactoryService<ENUM extends Enum> {
+    ENUM getEnum();
+}
+"
+
+"public abstract class FactoryAbs<ENUM extends Enum, INT extends FactoryService<ENUM>> implements Factory<ENUM, INT> {
+    protected final Map<ENUM, INT> map = new HashMap();
+
+    @Autowired
+    public void setMap(List<INT> services) {
+        if (services.size() == 0) {
+            throw new FactoryNoOneServiceException(this);
+        } else {
+            for(INT service : services) {
+                if (this.map.containsKey(service.getEnum())) {
+                    throw new FactoryKeyExistsException(service.getEnum(), this);
+                }
+
+                this.map.put(service.getEnum(), service);
+            }
+
+            this.checkMap();
+        }
+    }
+
+    protected void checkMap() {
+    }
+
+    public INT getService(ENUM gen) {
+        return (INT)(this.map.get(gen));
+    }
+
+    public Set<ENUM> getServiceTypes() {
+        return this.map.keySet();
+    }
+}"
+
+"public class FixedDelayTimeResolver implements TimeResolver {
+    public LocalDateTime getNextExecutionTime(ExecutionResultModel taskResult, String timeParameter) {
+        int delay = Integer.parseInt(timeParameter);
+        return taskResult.getStartTime().plusSeconds((long)delay).plusSeconds(taskResult.getExecutionDuration() / 1000L);
+    }
+}
+"
+
+"public class CronTimeResolver implements TimeResolver {
+    public LocalDateTime getNextExecutionTime(ExecutionResultModel taskResult, String timeParameter) {
+        return this.parseString(timeParameter, LocalDateTime.now());
+    }
+
+    public LocalDateTime parseString(String timeString, LocalDateTime fromTime) {
+        String[] stringFields = timeString.split(" ");
+        LocalDateTime now = LocalDateTime.from(fromTime);
+        LocalDateTime resultTime = LocalDateTime.from(fromTime);
+        boolean needIncrement = true;
+        int lastIncrementIndex = -1;
+
+        for(TimeUnits timeUnit : TimeUnits.values()) {
+            String inputTimeUnitString = stringFields[timeUnit.ordinal()];
+            if ((resultTime.isBefore(now) || resultTime.isEqual(now) || needIncrement) && Objects.equals(inputTimeUnitString, "*")) {
+                needIncrement = false;
+                resultTime = timeUnit.increment(resultTime);
+                if (resultTime.isAfter(now)) {
+                    lastIncrementIndex = timeUnit.ordinal();
+                }
+            } else if (!Objects.equals(inputTimeUnitString, "*")) {
+                resultTime = timeUnit.set(resultTime, inputTimeUnitString);
+            }
+        }
+
+        for(TimeUnits timeUnit : TimeUnits.values()) {
+            int index = timeUnit.ordinal();
+            if (index < lastIncrementIndex && Objects.equals(stringFields[index], "*")) {
+                resultTime = timeUnit.set(resultTime, "0");
+            }
+        }
+
+        if (needIncrement) {
+            resultTime = resultTime.plusYears(1L);
+        }
+
+        return resultTime;
+    }
+}"
+
+"public interface TimeResolver {
+    LocalDateTime getNextExecutionTime(ExecutionResultModel taskResult, String timeParameter);
+}
+"
+
+"public class ExecutionResultModel<T extends Enum<T>> {
+    private Long executionDuration;
+    private ExecutionTaskResultStatus result;
+    private T taskType;
+    private String resultMessage;
+    private String params;
+    private LocalDateTime startTime;
+    private LocalDateTime nextExecutionTime;
+
+    @Generated
+    public static <T extends Enum<T>> ExecutionResultModelBuilder<T> builder() {
+        return new ExecutionResultModelBuilder<T>();
+    }
+
+    @Generated
+    public Long getExecutionDuration() {
+        return this.executionDuration;
+    }
+
+    @Generated
+    public ExecutionTaskResultStatus getResult() {
+        return this.result;
+    }
+
+    @Generated
+    public T getTaskType() {
+        return this.taskType;
+    }
+
+    @Generated
+    public String getResultMessage() {
+        return this.resultMessage;
+    }
+
+    @Generated
+    public String getParams() {
+        return this.params;
+    }
+
+    @Generated
+    public LocalDateTime getStartTime() {
+        return this.startTime;
+    }
+
+    @Generated
+    public LocalDateTime getNextExecutionTime() {
+        return this.nextExecutionTime;
+    }
+
+    @Generated
+    public void setExecutionDuration(final Long executionDuration) {
+        this.executionDuration = executionDuration;
+    }
+
+    @Generated
+    public void setResult(final ExecutionTaskResultStatus result) {
+        this.result = result;
+    }
+
+    @Generated
+    public void setTaskType(final T taskType) {
+        this.taskType = taskType;
+    }
+
+    @Generated
+    public void setResultMessage(final String resultMessage) {
+        this.resultMessage = resultMessage;
+    }
+
+    @Generated
+    public void setParams(final String params) {
+        this.params = params;
+    }
+
+    @Generated
+    public void setStartTime(final LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    @Generated
+    public void setNextExecutionTime(final LocalDateTime nextExecutionTime) {
+        this.nextExecutionTime = nextExecutionTime;
+    }
+
+    @Generated
+    public boolean equals(final Object o) {
+        if (o == this) {
+            return true;
+        } else if (!(o instanceof ExecutionResultModel)) {
+            return false;
+        } else {
+            ExecutionResultModel<?> other = (ExecutionResultModel)o;
+            if (!other.canEqual(this)) {
+                return false;
+            } else {
+                Object this$executionDuration = this.getExecutionDuration();
+                Object other$executionDuration = other.getExecutionDuration();
+                if (this$executionDuration == null) {
+                    if (other$executionDuration != null) {
+                        return false;
+                    }
+                } else if (!this$executionDuration.equals(other$executionDuration)) {
+                    return false;
+                }
+
+                Object this$result = this.getResult();
+                Object other$result = other.getResult();
+                if (this$result == null) {
+                    if (other$result != null) {
+                        return false;
+                    }
+                } else if (!this$result.equals(other$result)) {
+                    return false;
+                }
+
+                Object this$taskType = this.getTaskType();
+                Object other$taskType = other.getTaskType();
+                if (this$taskType == null) {
+                    if (other$taskType != null) {
+                        return false;
+                    }
+                } else if (!this$taskType.equals(other$taskType)) {
+                    return false;
+                }
+
+                Object this$resultMessage = this.getResultMessage();
+                Object other$resultMessage = other.getResultMessage();
+                if (this$resultMessage == null) {
+                    if (other$resultMessage != null) {
+                        return false;
+                    }
+                } else if (!this$resultMessage.equals(other$resultMessage)) {
+                    return false;
+                }
+
+                Object this$params = this.getParams();
+                Object other$params = other.getParams();
+                if (this$params == null) {
+                    if (other$params != null) {
+                        return false;
+                    }
+                } else if (!this$params.equals(other$params)) {
+                    return false;
+                }
+
+                Object this$startTime = this.getStartTime();
+                Object other$startTime = other.getStartTime();
+                if (this$startTime == null) {
+                    if (other$startTime != null) {
+                        return false;
+                    }
+                } else if (!this$startTime.equals(other$startTime)) {
+                    return false;
+                }
+
+                Object this$nextExecutionTime = this.getNextExecutionTime();
+                Object other$nextExecutionTime = other.getNextExecutionTime();
+                if (this$nextExecutionTime == null) {
+                    if (other$nextExecutionTime != null) {
+                        return false;
+                    }
+                } else if (!this$nextExecutionTime.equals(other$nextExecutionTime)) {
+                    return false;
+                }
+
+                return true;
+            }
+        }
+    }
+
+    @Generated
+    protected boolean canEqual(final Object other) {
+        return other instanceof ExecutionResultModel;
+    }
+
+    @Generated
+    public int hashCode() {
+        int PRIME = 59;
+        int result = 1;
+        Object $executionDuration = this.getExecutionDuration();
+        result = result * 59 + ($executionDuration == null ? 43 : $executionDuration.hashCode());
+        Object $result = this.getResult();
+        result = result * 59 + ($result == null ? 43 : $result.hashCode());
+        Object $taskType = this.getTaskType();
+        result = result * 59 + ($taskType == null ? 43 : $taskType.hashCode());
+        Object $resultMessage = this.getResultMessage();
+        result = result * 59 + ($resultMessage == null ? 43 : $resultMessage.hashCode());
+        Object $params = this.getParams();
+        result = result * 59 + ($params == null ? 43 : $params.hashCode());
+        Object $startTime = this.getStartTime();
+        result = result * 59 + ($startTime == null ? 43 : $startTime.hashCode());
+        Object $nextExecutionTime = this.getNextExecutionTime();
+        result = result * 59 + ($nextExecutionTime == null ? 43 : $nextExecutionTime.hashCode());
+        return result;
+    }
+
+    @Generated
+    public String toString() {
+        Long var10000 = this.getExecutionDuration();
+        return "ExecutionResultModel(executionDuration=" + var10000 + ", result=" + String.valueOf(this.getResult()) + ", taskType=" + String.valueOf(this.getTaskType()) + ", resultMessage=" + this.getResultMessage() + ", params=" + this.getParams() + ", startTime=" + String.valueOf(this.getStartTime()) + ", nextExecutionTime=" + String.valueOf(this.getNextExecutionTime()) + ")";
+    }
+
+    @Generated
+    public ExecutionResultModel(final Long executionDuration, final ExecutionTaskResultStatus result, final T taskType, final String resultMessage, final String params, final LocalDateTime startTime, final LocalDateTime nextExecutionTime) {
+        this.executionDuration = executionDuration;
+        this.result = result;
+        this.taskType = taskType;
+        this.resultMessage = resultMessage;
+        this.params = params;
+        this.startTime = startTime;
+        this.nextExecutionTime = nextExecutionTime;
+    }
+
+    @Generated
+    public ExecutionResultModel() {
+    }
+
+    @Generated
+    public static class ExecutionResultModelBuilder<T extends Enum<T>> {
+        @Generated
+        private Long executionDuration;
+        @Generated
+        private ExecutionTaskResultStatus result;
+        @Generated
+        private T taskType;
+        @Generated
+        private String resultMessage;
+        @Generated
+        private String params;
+        @Generated
+        private LocalDateTime startTime;
+        @Generated
+        private LocalDateTime nextExecutionTime;
+
+        @Generated
+        ExecutionResultModelBuilder() {
+        }
+
+        @Generated
+        public ExecutionResultModelBuilder<T> executionDuration(final Long executionDuration) {
+            this.executionDuration = executionDuration;
+            return this;
+        }
+
+        @Generated
+        public ExecutionResultModelBuilder<T> result(final ExecutionTaskResultStatus result) {
+            this.result = result;
+            return this;
+        }
+
+        @Generated
+        public ExecutionResultModelBuilder<T> taskType(final T taskType) {
+            this.taskType = taskType;
+            return this;
+        }
+
+        @Generated
+        public ExecutionResultModelBuilder<T> resultMessage(final String resultMessage) {
+            this.resultMessage = resultMessage;
+            return this;
+        }
+
+        @Generated
+        public ExecutionResultModelBuilder<T> params(final String params) {
+            this.params = params;
+            return this;
+        }
+
+        @Generated
+        public ExecutionResultModelBuilder<T> startTime(final LocalDateTime startTime) {
+            this.startTime = startTime;
+            return this;
+        }
+
+        @Generated
+        public ExecutionResultModelBuilder<T> nextExecutionTime(final LocalDateTime nextExecutionTime) {
+            this.nextExecutionTime = nextExecutionTime;
+            return this;
+        }
+
+        @Generated
+        public ExecutionResultModel<T> build() {
+            return new ExecutionResultModel<T>(this.executionDuration, this.result, this.taskType, this.resultMessage, this.params, this.startTime, this.nextExecutionTime);
+        }
+
+        @Generated
+        public String toString() {
+            Long var10000 = this.executionDuration;
+            return "ExecutionResultModel.ExecutionResultModelBuilder(executionDuration=" + var10000 + ", result=" + String.valueOf(this.result) + ", taskType=" + String.valueOf(this.taskType) + ", resultMessage=" + this.resultMessage + ", params=" + this.params + ", startTime=" + String.valueOf(this.startTime) + ", nextExecutionTime=" + String.valueOf(this.nextExecutionTime) + ")";
+        }
+    }
+}"
+
+"/**
+ * Реализация TaskManagerProperties
+ */
+@Component
+@Getter
+@Setter
+@ConfigurationProperties(prefix = "gifts.slave.task.manager")
+public class TaskManagerPropertiesImpl implements TaskManagerProperties {
+    private boolean enabled = false;
+    private String nodeName = "local";
+    private int maxTaskCount = 1;
+    private int taskTimeout = 30;
+    private long checkRate = 30;
+}"
+
+"public interface TaskManagerProperties {
+    boolean isEnabled();
+
+    String getNodeName();
+
+    int getMaxTaskCount();
+
+    int getTaskTimeout();
+
+    long getCheckRate();
+}"
+
+"public class TaskPropertiesModel<T extends Enum<T>> implements ScheduledTaskGetter<T> {
+    private T taskType;
+    private TimeTaskType taskTimeType;
+    private String params;
+    private String timeParameter;
+
+    @Generated
+    public T getTaskType() {
+        return this.taskType;
+    }
+
+    @Generated
+    public TimeTaskType getTaskTimeType() {
+        return this.taskTimeType;
+    }
+
+    @Generated
+    public String getParams() {
+        return this.params;
+    }
+
+    @Generated
+    public String getTimeParameter() {
+        return this.timeParameter;
+    }
+
+    @Generated
+    public void setTaskType(final T taskType) {
+        this.taskType = taskType;
+    }
+
+    @Generated
+    public void setTaskTimeType(final TimeTaskType taskTimeType) {
+        this.taskTimeType = taskTimeType;
+    }
+
+    @Generated
+    public void setParams(final String params) {
+        this.params = params;
+    }
+
+    @Generated
+    public void setTimeParameter(final String timeParameter) {
+        this.timeParameter = timeParameter;
+    }
+
+    @Generated
+    public boolean equals(final Object o) {
+        if (o == this) {
+            return true;
+        } else if (!(o instanceof TaskPropertiesModel)) {
+            return false;
+        } else {
+            TaskPropertiesModel<?> other = (TaskPropertiesModel)o;
+            if (!other.canEqual(this)) {
+                return false;
+            } else {
+                Object this$taskType = this.getTaskType();
+                Object other$taskType = other.getTaskType();
+                if (this$taskType == null) {
+                    if (other$taskType != null) {
+                        return false;
+                    }
+                } else if (!this$taskType.equals(other$taskType)) {
+                    return false;
+                }
+
+                Object this$taskTimeType = this.getTaskTimeType();
+                Object other$taskTimeType = other.getTaskTimeType();
+                if (this$taskTimeType == null) {
+                    if (other$taskTimeType != null) {
+                        return false;
+                    }
+                } else if (!this$taskTimeType.equals(other$taskTimeType)) {
+                    return false;
+                }
+
+                Object this$params = this.getParams();
+                Object other$params = other.getParams();
+                if (this$params == null) {
+                    if (other$params != null) {
+                        return false;
+                    }
+                } else if (!this$params.equals(other$params)) {
+                    return false;
+                }
+
+                Object this$timeParameter = this.getTimeParameter();
+                Object other$timeParameter = other.getTimeParameter();
+                if (this$timeParameter == null) {
+                    if (other$timeParameter != null) {
+                        return false;
+                    }
+                } else if (!this$timeParameter.equals(other$timeParameter)) {
+                    return false;
+                }
+
+                return true;
+            }
+        }
+    }
+
+    @Generated
+    protected boolean canEqual(final Object other) {
+        return other instanceof TaskPropertiesModel;
+    }
+
+    @Generated
+    public int hashCode() {
+        int PRIME = 59;
+        int result = 1;
+        Object $taskType = this.getTaskType();
+        result = result * 59 + ($taskType == null ? 43 : $taskType.hashCode());
+        Object $taskTimeType = this.getTaskTimeType();
+        result = result * 59 + ($taskTimeType == null ? 43 : $taskTimeType.hashCode());
+        Object $params = this.getParams();
+        result = result * 59 + ($params == null ? 43 : $params.hashCode());
+        Object $timeParameter = this.getTimeParameter();
+        result = result * 59 + ($timeParameter == null ? 43 : $timeParameter.hashCode());
+        return result;
+    }
+
+    @Generated
+    public String toString() {
+        String var10000 = String.valueOf(this.getTaskType());
+        return "TaskPropertiesModel(taskType=" + var10000 + ", taskTimeType=" + String.valueOf(this.getTaskTimeType()) + ", params=" + this.getParams() + ", timeParameter=" + this.getTimeParameter() + ")";
+    }
+}"
+
+
+"@Slf4j 
+public class TaskManagerImpl extends TaskManagerAbs<GiftsScheduledTaskEnum> {
+    public TaskManagerImpl(TaskManagerProperties config,
+                           ScheduledTaskRepository<GiftsScheduledTaskEnum> taskRepository,
+                           TaskServiceFactory<GiftsScheduledTaskEnum> serviceFactory) {
+        super(config, taskRepository, serviceFactory);
+    }
+}"
+
+"public abstract class TaskManagerAbs<T extends Enum<T>> implements TaskManager<T> {
+    @Generated
+    private static final Logger log = LoggerFactory.getLogger(TaskManagerAbs.class);
+    protected final TaskManagerProperties config;
+    protected final ScheduledTaskRepository<T> taskRepository;
+    protected final FactoryAbs<T, TaskService<T>> serviceFactory;
+    protected final Set<String> currentTasks = new CopyOnWriteArraySet();
+    private List<String> initializedTasks;
+
+    @PostConstruct
+    public void initTaskWorkers() {
+        log.info("Инициализация планировщика задач");
+        this.initializedTasks = this.serviceFactory.getServiceTypes().stream().map(Enum::name).toList();
+        log.info("Для планировщика задач сконфигурировано исполнение следующих задач :{}", this.initializedTasks);
+    }
+
+    @Scheduled(
+        initialDelay = 10000L,
+        fixedRateString = "${gifts.slave.task.manager.checkRate:30}000"
+    )
+    public void findAndExecuteTask() {
+        log.debug("Поиск новой задачи планировщиком задач");
+        if (this.currentTasks.size() <= this.config.getMaxTaskCount()) {
+            ScheduledTask<T> task = this.findNewTask();
+            if (task == null) {
+                log.debug("Задачи для планировщика задач не найдено");
+                return;
+            }
+
+            this.executeTask(task);
+        }
+
+    }
+
+    public ScheduledTask<T> findNewTask() {
+        return this.taskRepository.findTask(this.initializedTasks);
+    }
+
+    public void executeTask(ScheduledTask<T> task) {
+        log.info("Запуск задачи {} планировщиком задач", task.getTaskType());
+        String taskType = task.getTaskType().name();
+        this.currentTasks.add(taskType);
+        this.executeTaskWithTimeout(task, this.config.getTaskTimeout());
+        this.currentTasks.remove(taskType);
+    }
+
+    private void executeTaskWithTimeout(final ScheduledTask<T> task, int taskTimeout) {
+        final Thread executionThread = new Thread(this.executionFunction(task));
+        (new Timer(true)).schedule(new TimerTask() {
+            public void run() {
+                if (executionThread.isAlive()) {
+                    TaskManagerAbs.log.error("Задача {} остановлена в связи с долгим исполнением", task.getTaskType());
+                    executionThread.interrupt();
+                }
+
+            }
+        }, (long)taskTimeout * 1000L);
+        executionThread.start();
+    }
+
+    private Runnable executionFunction(ScheduledTask<T> task) {
+        return () -> {
+            long startTimeMillis = System.currentTimeMillis();
+            LocalDateTime startTimeTimeStamp = LocalDateTime.now();
+            ExecutionResultModel<T> executionResult = ((TaskService)this.serviceFactory.getService(task.getTaskType())).execute(task);
+            executionResult.setStartTime(startTimeTimeStamp);
+            executionResult.setExecutionDuration(System.currentTimeMillis() - startTimeMillis);
+            executionResult.setNextExecutionTime(task.calculateNextExecutionTime(executionResult));
+            executionResult.setTaskType(task.getTaskType());
+            log.debug("Исполнение задачи {} выполнено успешно", task.getTaskType());
+            this.finishTask(executionResult);
+        };
+    }
+
+    public void finishTask(ExecutionResultModel<T> result) {
+        log.debug("Сохранение результатов исполнения задачи");
+        this.taskRepository.saveTask(result);
+    }
+
+    public void generateAlert() {
+    }
+
+    @Generated
+    public TaskManagerAbs(final TaskManagerProperties config, final ScheduledTaskRepository<T> taskRepository, final FactoryAbs<T, TaskService<T>> serviceFactory) {
+        this.config = config;
+        this.taskRepository = taskRepository;
+        this.serviceFactory = serviceFactory;
+    }
+}"
+
+"public interface TaskManager<T extends Enum<T>> {
+    void findAndExecuteTask();
+
+    ScheduledTask<T> findNewTask();
+
+    void executeTask(ScheduledTask<T> task);
+
+    void finishTask(ExecutionResultModel<T> result);
+
+    void generateAlert();
+}"
+
+"@RequiredArgsConstructor
+@Slf4j
+public class ScheduledTaskRepositoryImpl implements ScheduledTaskRepository<GiftsScheduledTaskEnum> {
+    private final DataspaceCorePacketClient dataspacePacketClient;
+    private final DataspaceCoreSearchClient dataspaceSearchClient;
+
+    @Override
+    public ScheduledTask<GiftsScheduledTaskEnum> findTask() {
+        return findTask(null);
+    }
+
+    @Override
+    public ScheduledTask<GiftsScheduledTaskEnum> findTask(List<String> taskTypes) {
+        log.debug("Поиск новых задач для планировщика задач");
+        ScheduledTaskGet dbTask;
+        try {
+            dbTask = this.getTaskFromDB(taskTypes);
+            if (dbTask == null) {
+                return null;
+            }
+            this.lockTask(dbTask);
+        } catch (SdkJsonRpcClientException e) {
+            log.warn("Не удалось получить задачу для планировщика задач ошибка - {}", e.getMessage());
+            return null;
+        }
+        var props = buildPropsModel(dbTask);
+        return props.getTaskType().getTaskInstance(props);
+    }
+
+    private ScheduledTaskGet getTaskFromDB(List<String> taskTypes) throws SdkJsonRpcClientException {
+        var tasks = dataspaceSearchClient.searchScheduledTask(with -> with
+                .withTaskType()
+                .withTimeParameter()
+                .withIsActive()
+                .withParameters()
+                .setWhere(where -> {
+                            var andContainer = GraspHelper.emptyAnd();
+                            andContainer.put(where.isActiveEq(true));
+                            andContainer.put(where.nextExecutionTimeLessOrEq(LocalDateTime.now()));
+                            andContainer.put(where.statusNotEq(ExecutionTaskResultStatus.IN_PROGRESS.name())
+                                    .or(where.statusEq(ExecutionTaskResultStatus.IN_PROGRESS.name())
+                                            .and(where.nextExecutionTimeLessOrEq(LocalDateTime.now().minusMinutes(30L))))
+                            );
+                            if (taskTypes != null) {
+                                andContainer.put(where.objectIdIn(taskTypes));
+                            }
+                            return andContainer.create();
+                        }
+                )
+                .setNeedAggregateVersion(true)
+                .setSortingAdvanced(sort -> sort.asc(ScheduledTaskGrasp::nextExecutionTime))
+                .setLimit(1)
+        );
+        return tasks.isEmpty() ? null : tasks.get(0);
+    }
+
+    private void lockTask(ScheduledTaskGet taskGet) throws SdkJsonRpcClientException {
+        log.debug("Блокируем задачу {} на исполнение текущим кластером с помощью оптимистичной блокировки", taskGet.getTaskType());
+        var packet = Packet.builder().withAggregateVersion(taskGet.$getAggregateVersion()).build();
+        var updateParam = UpdateScheduledTaskParam.create()
+                .setStatus(ExecutionTaskResultStatus.IN_PROGRESS.name());
+        packet.scheduledTask.update(ScheduledTaskRef.of(taskGet.getObjectId()), updateParam);
+        this.dataspacePacketClient.execute(packet);
+    }
+
+    private TaskPropertiesModel<GiftsScheduledTaskEnum> buildPropsModel(ScheduledTaskGet dbTask) {
+        var props = new TaskPropertiesModel<GiftsScheduledTaskEnum>();
+        props.setTaskType(GiftsScheduledTaskEnum.valueOf(dbTask.getObjectId()));
+        props.setTaskTimeType(TimeTaskType.valueOf(dbTask.getTaskType()));
+        props.setParams(dbTask.getParameters());
+        props.setTimeParameter(dbTask.getTimeParameter());
+        return props;
+    }
+
+    @Override
+    public void saveTask(ExecutionResultModel<GiftsScheduledTaskEnum> taskResult) {
+        log.debug("Сохранение результата исполнения задачи {} планировщиком задач", taskResult.getTaskType());
+        var packet = Packet.createPacket();
+        var param = UpdateScheduledTaskParam.create()
+                .setParameters(taskResult.getParams())
+                .setNextExecutionTime(taskResult.getNextExecutionTime())
+                .setStatus(taskResult.getResult().name());
+        packet.scheduledTask.update(ScheduledTaskRef.of(taskResult.getTaskType().name()), param);
+        try {
+            dataspacePacketClient.execute(packet);
+        } catch (SdkJsonRpcClientException e) {
+            log.error("Не удалось сохранить результат исполнения задачи {} планировщиком задач. Ошибка {}", taskResult.getTaskType(), e.getMessage());
+        }
+    }
+}"
+
+"public interface ScheduledTaskRepository<T extends Enum<T>> {
+    ScheduledTask<T> findTask();
+
+    ScheduledTask<T> findTask(List<String> taskTypes);
+
+    void saveTask(ExecutionResultModel<T> task);
+}
+"
+
+"/**
+ * Типы задач планировщика которые обрабатывает фабрика
+ */
+public enum GiftsScheduledTaskEnum implements ScheduledTaskEnum<GiftsScheduledTaskEnum> {
+    STATISTIC_AGGREGATE_TASK {
+        @Override
+        public ScheduledTask<GiftsScheduledTaskEnum> getTaskInstance(ScheduledTaskGetter<GiftsScheduledTaskEnum> getter) {
+            return new StatisticAgregateTask(getter);
+        }
+    },
+
+    ARCHIVING_GIFTS_TASK {
+        @Override
+        public ScheduledTask<GiftsScheduledTaskEnum> getTaskInstance(ScheduledTaskGetter<GiftsScheduledTaskEnum> getter) {
+            return new ArchivingGiftTask(getter);
+        }
+    },
+    CHECK_RESERVED_GIFTS_TASK {
+        @Override
+        public ScheduledTask<GiftsScheduledTaskEnum> getTaskInstance(ScheduledTaskGetter<GiftsScheduledTaskEnum> getter) {
+            return new CheckReservedGiftTask(getter);
+        }
+    },
+    CLOSE_OLD_EVENT_TASK {
+        @Override
+        public ScheduledTask<GiftsScheduledTaskEnum> getTaskInstance(ScheduledTaskGetter<GiftsScheduledTaskEnum> getter) {
+            return new CloseOldEventTask(getter);
+        }
+    },
+    SEND_NOTIFICATIONS_TASK {
+        @Override
+        public ScheduledTask<GiftsScheduledTaskEnum> getTaskInstance(ScheduledTaskGetter<GiftsScheduledTaskEnum> getter) {
+            return new NotificationTask(getter);
+        }
+    }
+}"
+
+"public abstract class BaseTaskService<T extends Enum<T>, PARAM> implements TaskService<T> {
+    protected abstract PARAM deserialize(String str);
+
+    protected String serializeParams(PARAM params) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(params);
+    }
+}"
+
+"public interface TaskService<T extends Enum<T>> extends FactoryService<T> {
+    ObjectMapper objectMapper = (new ObjectMapper()).registerModule(new JavaTimeModule()).configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+
+    ExecutionResultModel<T> run(ScheduledTask<T> task) throws Exception;
+
+    default ExecutionResultModel<T> execute(ScheduledTask<T> task) {
+        try {
+            return this.run(task);
+        } catch (Exception e) {
+            return task.errorResult(e);
+        }
+    }
+}"
+
+"@Service
+public class TaskServiceFactory<T extends Enum<T>> extends FactoryAbs<T, TaskService<T>> {
+}"
+
+"public interface TaskManagerProperties {
+    boolean isEnabled();
+
+    String getNodeName();
+
+    int getMaxTaskCount();
+
+    int getTaskTimeout();
+
+    long getCheckRate();
+}"
+
+"/**
+ * Класс содержащий в себе параметры по переводу разных типов пулов подарков в архивный статус
+ */
+public class ArchivingGiftTask extends ScheduledTask<GiftsScheduledTaskEnum> {
+    public ArchivingGiftTask(ScheduledTaskGetter<GiftsScheduledTaskEnum> getter) {
+        super(getter);
+    }
+}
+"
+
+"public enum TimeTaskType {
+    FIXED_DELAY("Фиксированное время между запусками", "Введите число от 1 до 10 000 секунд") {
+        public LocalDateTime getNextExecutionTime(ExecutionResultModel taskResult, String timeParameter) {
+            return (new FixedDelayTimeResolver()).getNextExecutionTime(taskResult, timeParameter);
+        }
+
+        public void validateTimeString(String inputString) throws IllegalArgumentException {
+            if (!inputString.matches("^([1-9][0-9]{0,3}|10000)$")) {
+                throw new IllegalArgumentException("Неверно указан интервал между запусками исполнения задачи. Введите число от 1 до 10 000 секунд");
+            }
+        }
+    },
+    CRON("Запуск по расписанию", "Введите маску расписания согласно документации в формате * * * * *") {
+        public LocalDateTime getNextExecutionTime(ExecutionResultModel taskResult, String timeParameter) {
+            return (new CronTimeResolver()).getNextExecutionTime(taskResult, timeParameter);
+        }
+
+        public void validateTimeString(String inputString) throws IllegalArgumentException {
+            if (!inputString.matches("^([0-5]?[0-9]|\\*) ([0-5]?[0-9]|\\*) (2[0-4]|[01]?[0-9]|\\*) ([1-9]|[12]\\d|3[01]|\\*) ([1-9]|1[1-2]|\\*)$")) {
+                throw new IllegalArgumentException("Неверно задана маска cron задачи. Введите маску согласно документации");
+            }
+        }
+    };
+
+    private final String description;
+    private final String hint;
+
+    private TimeTaskType(String description, String hint) {
+        this.description = description;
+        this.hint = hint;
+    }
+
+    public abstract LocalDateTime getNextExecutionTime(ExecutionResultModel taskResult, String timeParameter);
+
+    public abstract void validateTimeString(String inputString) throws IllegalArgumentException;
+
+    @Generated
+    public String getDescription() {
+        return this.description;
+    }
+
+    @Generated
+    public String getHint() {
+        return this.hint;
+    }
+}"
+
+"@Slf4j
+@Service
+@RequiredArgsConstructor
+public class CheckReservedGiftTaskService extends BaseTaskService<GiftsScheduledTaskEnum, CheckReservedGiftParameter> {
+    private final CheckReservedGiftServiceFactory giftServiceFactory;
+
+    @Override
+    public ExecutionResultModel<GiftsScheduledTaskEnum> run(ScheduledTask<GiftsScheduledTaskEnum> task) throws Exception {
+        log.debug("Запуск задачи по автоматической проверке зарезервированных промокодов");
+        var resultStringBuilder = new StringBuilder();
+        var taskParameters = this.deserialize(task.getParams());
+        for (var giftType : GiftType.values()) {
+            var service = giftServiceFactory.getService(giftType);
+            if (service != null) {
+                resultStringBuilder.append(service.doActionAndBuildResultString())
+                        .append("\n");
+            }
+        }
+        return buildSuccessResult(taskParameters, resultStringBuilder.toString().trim());
+    }
+
+    private ExecutionResultModel<GiftsScheduledTaskEnum> buildSuccessResult(CheckReservedGiftParameter taskParameters, String resultMessage) throws JsonProcessingException {
+        log.debug("Сборка объекта с результатами исполнения задачи");
+        var result = new ExecutionResultModel<GiftsScheduledTaskEnum>();
+        result.setResult(ExecutionTaskResultStatus.SUCCESS);
+        result.setTaskType(getEnum());
+        result.setParams(serializeParams(taskParameters));
+        result.setResultMessage(resultMessage);
+        return result;
+    }
+
+    @Override
+    public GiftsScheduledTaskEnum getEnum() {
+        return GiftsScheduledTaskEnum.CHECK_RESERVED_GIFTS_TASK;
+    }
+
+    @Override
+    protected CheckReservedGiftParameter deserialize(String str) {
+        log.debug("Десериализация параметров задачи планировщика из строки");
+        try {
+            return objectMapper.readValue(str, CheckReservedGiftParameter.class);
+        } catch (JsonProcessingException ignored) {
+            log.warn("Ошибка десериализации CheckReservedGiftParameter");
+            return new CheckReservedGiftParameter();
+        }
+    }
+}"
+
+
+"/**
+ * Добавление бинов планировщика задач в контекст
+ */
+@Configuration
+@RequiredArgsConstructor
+@ConditionalOnProperty(name="gifts.slave.task.manager.enabled", havingValue="true",  matchIfMissing=false)
+public class TaskManagerConfig {
+    private final TaskManagerProperties properties;
+
+    @Bean
+    public ScheduledTaskRepository<GiftsScheduledTaskEnum> scheduledTaskRepository(DataspaceCorePacketClient dataspacePacketClient,
+                                                                          DataspaceCoreSearchClient dataspaceSearchClient) {
+        return new ScheduledTaskRepositoryImpl(dataspacePacketClient, dataspaceSearchClient);
+    }
+
+    @Bean
+    public ScheduledTaskRunsRepository<GiftsScheduledTaskEnum> scheduledTaskRunsRepository(DataspaceCorePacketClient dataspacePacketClient) {
+        return new ScheduledTaskRunsRepositoryImpl<>(dataspacePacketClient, properties);
+    }
+
+    @Bean
+    public TaskManager<GiftsScheduledTaskEnum> taskManager(ScheduledTaskRepository<GiftsScheduledTaskEnum> taskRepository,
+                                                           TaskServiceFactory<GiftsScheduledTaskEnum> serviceFactory) {
+        return new TaskManagerImpl(properties, taskRepository, serviceFactory);
+    }
+}"
+
+"/**
+ * Реализация ScheduledTaskRunsRepository
+ * @param <T> тип задач
+ */
+@AllArgsConstructor
+@Slf4j
+public class ScheduledTaskRunsRepositoryImpl<T extends Enum<T>> implements ScheduledTaskRunsRepository<T> {
+
+    private final DataspaceCorePacketClient dataspacePacketClient;
+    private final TaskManagerProperties properties;
+
+    @Override
+    public void saveStartTask(ScheduledTaskGetter<T> taskInfo) {
+        log.debug("Сохранение информации о запуске задачи {}", taskInfo.getTaskType());
+        var packet = Packet.createPacket();
+        var param = CreateScheduledTaskRunsParam.create()
+                .setTaskId(ScheduledTaskRef.of(taskInfo.getTaskType().name()))
+                .setExecutionStatus(ExecutionTaskResultStatus.IN_PROGRESS.name())
+                .setTimeStamp(LocalDateTime.now())
+                .setResultString("Параметры запуска -" + taskInfo.getParams())
+                .setNode(properties.getNodeName());
+        packet.scheduledTaskRuns.create(param);
+        try {
+            dataspacePacketClient.execute(packet);
+        } catch (Exception e){
+            log.warn("Не удалось сохранить информацию о запуске задачи {}", taskInfo.getTaskType());
+        }
+    }
+
+    @Override
+    public void saveFinishTask(ExecutionResultModel<T> resultInfo) {
+        log.debug("Сохранение информации об исполнении задачи {}", resultInfo.getTaskType());
+        var packet = Packet.createPacket();
+        var param = CreateScheduledTaskRunsParam.create()
+                .setTaskId(ScheduledTaskRef.of(resultInfo.getTaskType().name()))
+                .setExecutionStatus(resultInfo.getResult().name())
+                .setResultString(resultInfo.getResultMessage())
+                .setTimeStamp(LocalDateTime.now())
+                .setNode(properties.getNodeName())
+                .setExecutionDuration(resultInfo.getExecutionDuration());
+        packet.scheduledTaskRuns.create(param);
+        try {
+            dataspacePacketClient.execute(packet);
+        } catch (Exception e){
+            log.warn("Не удалось сохранить информацию об исполнении задачи {}", resultInfo.getTaskType());
+        }
+    }
+}""

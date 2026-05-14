@@ -19,6 +19,6 @@ public class MechanicsMonitoringTaskService extends AbstractMonitoringTaskServic
 
     @Override
     protected MonitoringTaskDefinition getDefinition() {
-        return MonitoringTaskDefinitions.MECHANICS;
+        return MonitoringTaskDefinitionRegistry.MECHANICS;
     }
 }

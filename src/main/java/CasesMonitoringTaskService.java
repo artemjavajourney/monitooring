@@ -19,6 +19,6 @@ public class CasesMonitoringTaskService extends AbstractMonitoringTaskService {
 
     @Override
     protected MonitoringTaskDefinition getDefinition() {
-        return MonitoringTaskDefinitions.CASES;
+        return MonitoringTaskDefinitionRegistry.CASES;
     }
 }

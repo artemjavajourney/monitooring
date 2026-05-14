@@ -19,6 +19,6 @@ public class NegativeCsiMonitoringTaskService extends AbstractMonitoringTaskServ
 
     @Override
     protected MonitoringTaskDefinition getDefinition() {
-        return MonitoringTaskDefinitions.NEGATIVE_CSI;
+        return MonitoringTaskDefinitionRegistry.NEGATIVE_CSI;
     }
 }

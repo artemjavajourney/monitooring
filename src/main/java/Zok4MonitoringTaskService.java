@@ -20,6 +20,6 @@ public class Zok4MonitoringTaskService extends AbstractMonitoringTaskService {
 
     @Override
     protected MonitoringTaskDefinition getDefinition() {
-        return MonitoringTaskDefinitions.ZOK_4;
+        return MonitoringTaskDefinitionRegistry.ZOK_4;
     }
 }

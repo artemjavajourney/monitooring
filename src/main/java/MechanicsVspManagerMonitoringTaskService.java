@@ -19,6 +19,6 @@ public class MechanicsVspManagerMonitoringTaskService extends AbstractMonitoring
 
     @Override
     protected MonitoringTaskDefinition getDefinition() {
-        return MonitoringTaskDefinitions.MECHANICS_VSP_MANAGER;
+        return MonitoringTaskDefinitionRegistry.MECHANICS_VSP_MANAGER;
     }
 }

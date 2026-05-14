@@ -2,9 +2,9 @@
  * Единое место, где зафиксировано соответствие:
  * task enum -> таблица -> бизнес-фильтр.
  */
-public final class MonitoringTaskDefinitions {
+public final class MonitoringTaskDefinitionRegistry {
 
-    private MonitoringTaskDefinitions() {
+    private MonitoringTaskDefinitionRegistry() {
     }
 
     public static final MonitoringTaskDefinition MECHANICS_VSP_MANAGER =
