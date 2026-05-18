@@ -1,6 +1,5 @@
-import lombok.Value;
-
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Описание того, что именно считает конкретная мониторинговая задача.

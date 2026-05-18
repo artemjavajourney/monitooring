@@ -18,5 +18,5 @@ public enum MonitoringCounterType {
      * process_type = ZOK
      * notification_attributes.originalSystemCode = ZOK_4
      */
-    GIFT_TASK_ZOK_4
+    GIFT_TASK_BY_PROCESS_TYPE_AND_ORIGINAL_SYSTEM_CODE
 }

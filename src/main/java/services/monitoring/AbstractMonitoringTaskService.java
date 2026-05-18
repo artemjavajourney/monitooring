@@ -18,7 +18,7 @@ public abstract class AbstractMonitoringTaskService
         extends BaseTaskService<GiftsScheduledTaskEnum, MonitoringTaskParameter> {
 
     private final MonitoringPeriodResolver periodResolver;
-    private final MonitoringEventRepository monitoringEventRepository;
+    private final MonitoringEventCounterRepository monitoringEventRepository;
     private final MonitoringNotificationService notificationService;
 
     protected abstract MonitoringTaskDefinition getDefinition();
@@ -29,7 +29,7 @@ public abstract class AbstractMonitoringTaskService
     ) throws Exception {
         MonitoringTaskDefinition definition = getDefinition();
 
-        log.debug("Запуск мониторинговой задачи {}", definition.getTaskEnum());
+        log.debug("Запуск мониторинговой задачи {}", definition.taskType());
 
         MonitoringTaskParameter params = deserialize(task.getParams());
         validateParams(params, task);
@@ -88,7 +88,7 @@ public abstract class AbstractMonitoringTaskService
 
     @Override
     public GiftsScheduledTaskEnum getEnum() {
-        return getDefinition().getTaskEnum();
+        return getDefinition().taskType();
     }
 
     @Override
@@ -97,7 +97,7 @@ public abstract class AbstractMonitoringTaskService
             return objectMapper.readValue(str, MonitoringTaskParameter.class);
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException(
-                    "Invalid monitoring task parameters for " + getDefinition().getTaskEnum(),
+                    "Invalid monitoring task parameters for " + getDefinition().taskType(),
                     e
             );
         }
@@ -158,14 +158,14 @@ public abstract class AbstractMonitoringTaskService
                 counterType: %s.
                 filterValue: %s.
                 """.formatted(
-                definition.getTaskEnum(),
-                definition.getFlowName(),
+                definition.taskType(),
+                definition.displayName(),
                 period.getFrom(),
                 period.getTo(),
                 params.getMinEventCount(),
                 actualCount,
-                definition.getCounterType(),
-                definition.getFilterValue()
+                definition.counterType(),
+                definition.filters()
         );
     }
 
@@ -185,14 +185,14 @@ public abstract class AbstractMonitoringTaskService
                 counterType: %s.
                 filterValue: %s.
                 """.formatted(
-                definition.getTaskEnum(),
-                definition.getFlowName(),
+                definition.taskType(),
+                definition.displayName(),
                 period.getFrom(),
                 period.getTo(),
                 params.getMinEventCount(),
                 actualCount,
-                definition.getCounterType(),
-                definition.getFilterValue()
+                definition.counterType(),
+                definition.filters()
         );
     }
 }

@@ -1,17 +1,17 @@
 import org.springframework.stereotype.Service;
 
 /**
- * 2) MECHANICS_MONITORING_TASK
+ * 4) NEGATIVE_CSI_MONITORING_TASK
  *
  * Проверяет количество записей в CasesForGifts
- * с giftProcess = MECHANICS.
+ * с giftProcess = NEGATIVE_CSI.
  */
 @Service
-public class MechanicsMonitoringTaskService extends AbstractMonitoringTaskService {
+public class NegativeCsiMonitoringTaskService extends AbstractMonitoringTaskService {
 
-    public MechanicsMonitoringTaskService(
+    public NegativeCsiMonitoringTaskService(
             MonitoringPeriodResolver periodResolver,
-            MonitoringEventRepository monitoringEventRepository,
+            MonitoringEventCounterRepository monitoringEventRepository,
             MonitoringNotificationService notificationService
     ) {
         super(periodResolver, monitoringEventRepository, notificationService);
@@ -19,6 +19,6 @@ public class MechanicsMonitoringTaskService extends AbstractMonitoringTaskServic
 
     @Override
     protected MonitoringTaskDefinition getDefinition() {
-        return MonitoringTaskDefinitionRegistry.MECHANICS;
+        return MonitoringTaskDefinitionRegistry.NEGATIVE_CSI;
     }
 }

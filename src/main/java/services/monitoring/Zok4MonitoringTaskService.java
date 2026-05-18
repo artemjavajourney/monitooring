@@ -12,7 +12,7 @@ public class Zok4MonitoringTaskService extends AbstractMonitoringTaskService {
 
     public Zok4MonitoringTaskService(
             MonitoringPeriodResolver periodResolver,
-            MonitoringEventRepository monitoringEventRepository,
+            MonitoringEventCounterRepository monitoringEventRepository,
             MonitoringNotificationService notificationService
     ) {
         super(periodResolver, monitoringEventRepository, notificationService);

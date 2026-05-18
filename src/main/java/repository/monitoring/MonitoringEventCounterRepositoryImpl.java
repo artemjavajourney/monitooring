@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
  */
 @Slf4j
 @Repository
-public class MonitoringEventRepositoryImpl implements MonitoringEventRepository {
+public class MonitoringEventCounterRepositoryImpl implements MonitoringEventCounterRepository {
 
     /**
      * Таблица gift_task.
@@ -58,9 +58,6 @@ public class MonitoringEventRepositoryImpl implements MonitoringEventRepository 
      */
     private static final String CASES_FOR_GIFTS_EVENT_DATE_COLUMN = "eventDate";
 
-    private static final String ZOK_PROCESS_TYPE = "ZOK";
-    private static final String ZOK_4_ORIGINAL_SYSTEM_CODE = "ZOK_4";
-
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -71,18 +68,23 @@ public class MonitoringEventRepositoryImpl implements MonitoringEventRepository 
             LocalDateTime from,
             LocalDateTime to
     ) {
-        return switch (definition.getCounterType()) {
-            case MonitoringCounterType.GIFT_TASK_BY_PROCESS_TYPE -> countGiftTaskByProcessType(
-                    definition.getFilterValue(),
+        return switch (definition.counterType()) {
+            case GIFT_TASK_BY_PROCESS_TYPE -> countGiftTaskByProcessType(
+                    definition.requiredFilter(MonitoringFilterKey.PROCESS_TYPE),
                     from,
                     to
             );
-            case MonitoringCounterType.CASES_FOR_GIFTS_BY_GIFT_PROCESS -> countCasesForGiftsByGiftProcess(
-                    definition.getFilterValue(),
+            case CASES_FOR_GIFTS_BY_GIFT_PROCESS -> countCasesForGiftsByGiftProcess(
+                    definition.requiredFilter(MonitoringFilterKey.GIFT_PROCESS),
                     from,
                     to
             );
-            case MonitoringCounterType.GIFT_TASK_ZOK_4 -> countZok4GiftTasks(from, to);
+            case GIFT_TASK_BY_PROCESS_TYPE_AND_ORIGINAL_SYSTEM_CODE -> countGiftTaskByProcessTypeAndOriginalSystemCode(
+                    definition.requiredFilter(MonitoringFilterKey.PROCESS_TYPE),
+                    definition.requiredFilter(MonitoringFilterKey.ORIGINAL_SYSTEM_CODE),
+                    from,
+                    to
+            );
         };
     }
 
@@ -140,7 +142,9 @@ public class MonitoringEventRepositoryImpl implements MonitoringEventRepository 
         return result.longValue();
     }
 
-    private long countZok4GiftTasks(
+    private long countGiftTaskByProcessTypeAndOriginalSystemCode(
+            String processType,
+            String originalSystemCode,
             LocalDateTime from,
             LocalDateTime to
     ) {
@@ -167,10 +171,10 @@ public class MonitoringEventRepositoryImpl implements MonitoringEventRepository 
         );
 
         Number result = (Number) entityManager.createNativeQuery(sql)
-                .setParameter("processType", ZOK_PROCESS_TYPE)
+                .setParameter("processType", processType)
                 .setParameter("from", from)
                 .setParameter("to", to)
-                .setParameter("originalSystemCode", ZOK_4_ORIGINAL_SYSTEM_CODE)
+                .setParameter("originalSystemCode", originalSystemCode)
                 .getSingleResult();
 
         return result.longValue();
