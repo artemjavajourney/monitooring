@@ -14,7 +14,7 @@ import java.util.List;
  */
 @Component
 @RequiredArgsConstructor
-public class JavaMailMonitoringEmailSender implements MonitoringEmailSender {
+public class JavaMailMonitoringNotificationSender implements MonitoringNotificationSender {
 
     private final JavaMailSender javaMailSender;
 

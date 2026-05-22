@@ -49,7 +49,7 @@ public class MonitoringTaskParameter {
     private Boolean recoveryMode = false;
 
     /**
-     * Получатели SMTP-уведомлений.
+     * Получатели уведомлений в корпоративном чате.
      */
     private List<String> recipients;
 

@@ -6,7 +6,7 @@ import java.util.List;
  * Если в проекте уже есть собственный SMTP/mail service,
  * можно реализовать этот интерфейс через него и удалить JavaMail-реализацию.
  */
-public interface MonitoringEmailSender {
+public interface MonitoringNotificationSender {
 
     void send(
             List<String> recipients,

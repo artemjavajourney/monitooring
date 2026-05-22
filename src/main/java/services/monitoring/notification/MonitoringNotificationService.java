@@ -13,10 +13,10 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class MonitoringNotificationService {
 
-    private static final String DEFAULT_ALERT_SUBJECT = "Проблема мониторингового потока";
-    private static final String DEFAULT_RECOVERY_SUBJECT = "Восстановление мониторингового потока";
+    private static final String DEFAULT_ALERT_SUBJECT = "Проблема monitoring-потока";
+    private static final String DEFAULT_RECOVERY_SUBJECT = "Восстановление monitoring-потока";
 
-    private final MonitoringEmailSender emailSender;
+    private final MonitoringNotificationSender notificationSender;
 
     public void sendAlert(
             MonitoringTaskDefinition definition,
@@ -34,17 +34,16 @@ public class MonitoringNotificationService {
 
                 Период проверки: с %s до %s.
                 Ожидалось получить больше %s событий.
-                По факту получено: %s.
+                Фактически получено: %s.
 
-                Техническая информация:
                 taskType: %s
                 counterType: %s
-                filterValue: %s
+                filters: %s
                 """.formatted(
                 definition.displayName(),
                 checkTime,
-                period.getFrom(),
-                period.getTo(),
+                period.from(),
+                period.to(),
                 params.getMinEventCount(),
                 actualCount,
                 definition.taskType(),
@@ -52,7 +51,7 @@ public class MonitoringNotificationService {
                 definition.filters()
         );
 
-        emailSender.send(params.getRecipients(), subject, body);
+        notificationSender.send(params.getRecipients(), subject, body);
     }
 
     public void sendRecovery(
@@ -69,24 +68,23 @@ public class MonitoringNotificationService {
                 Период проверки: с %s до %s.
                 Получено событий: %s.
 
-                Техническая информация:
                 taskType: %s
                 counterType: %s
-                filterValue: %s
+                filters: %s
                 """.formatted(
                 definition.displayName(),
                 checkTime,
-                period.getFrom(),
-                period.getTo(),
+                period.from(),
+                period.to(),
                 actualCount,
                 definition.taskType(),
                 definition.counterType(),
                 definition.filters()
         );
 
-        emailSender.send(
+        notificationSender.send(
                 params.getRecipients(),
-                DEFAULT_RECOVERY_SUBJECT + ": " + definition.displayName(),
+                DEFAULT_RECOVERY_SUBJECT,
                 body
         );
     }
