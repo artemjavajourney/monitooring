@@ -561,8 +561,8 @@ gifts.giftsslave.taskmanager
 │       ├── Zok4MonitoringTaskService.java
 │       │
 │       └── notification
-│           ├── MonitoringEmailSender.java
-│           ├── JavaMailMonitoringEmailSender.java
+│           ├── MonitoringNotificationSender.java
+│           ├── JavaMailMonitoringNotificationSender.java
 │           └── MonitoringNotificationService.java
 │
 └── tasks
@@ -1322,14 +1322,14 @@ Recovery отправляется:
 
 ---
 
-## 31. MonitoringEmailSender
+## 31. MonitoringNotificationSender
 
-`MonitoringEmailSender` — интерфейс отправки email.
+`MonitoringNotificationSender` — интерфейс отправки email.
 
 Он нужен, чтобы monitoring-логика не зависела напрямую от конкретного SMTP-сервиса проекта.
 
 ```java
-public interface MonitoringEmailSender {
+public interface MonitoringNotificationSender {
 
     void send(
             List<String> recipients,
@@ -1342,12 +1342,12 @@ public interface MonitoringEmailSender {
 Реализация:
 
 ```text
-JavaMailMonitoringEmailSender
+JavaMailMonitoringNotificationSender
 ```
 
 или адаптер над уже существующим mail-сервисом проекта.
 
-Если в проекте уже есть готовый SMTP-сервис, лучше использовать его внутри `MonitoringEmailSender`, а не писать отправку писем заново.
+Если в проекте уже есть готовый SMTP-сервис, лучше использовать его внутри `MonitoringNotificationSender`, а не писать отправку писем заново.
 
 ---
 
@@ -1687,8 +1687,8 @@ MonitoringEventCounterRepositoryImpl
 Создать:
 
 ```text
-MonitoringEmailSender
-JavaMailMonitoringEmailSender
+MonitoringNotificationSender
+JavaMailMonitoringNotificationSender
 MonitoringNotificationService
 ```
 

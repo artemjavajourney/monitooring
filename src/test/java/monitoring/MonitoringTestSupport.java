@@ -102,7 +102,7 @@ final class MonitoringTestSupport {
         }
     }
 
-    static final class RecordingEmailSender implements MonitoringEmailSender {
+    static final class RecordingEmailSender implements MonitoringNotificationSender {
         private final List<SentMessage> messages = new ArrayList<>();
 
         @Override
