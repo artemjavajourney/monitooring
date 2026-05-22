@@ -1,18 +1,19 @@
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 /**
  * SMTP-реализация отправки email через Spring JavaMailSender.
  *
+ * Не помечен как @Component, чтобы основной реализацией по умолчанию
+ * была отправка в корпоративный чат через CorporateChatMonitoringSender.
+ *
  * Требует spring-boot-starter-mail или аналогичную зависимость.
  * Если в проекте уже есть собственный сервис отправки писем,
  * лучше заменить эту реализацию адаптером к существующему сервису.
  */
-@Component
 @RequiredArgsConstructor
 public class JavaMailMonitoringEmailSender implements MonitoringEmailSender {
 
