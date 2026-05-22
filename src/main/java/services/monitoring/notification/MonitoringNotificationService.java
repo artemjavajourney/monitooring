@@ -16,7 +16,7 @@ public class MonitoringNotificationService {
     private static final String DEFAULT_ALERT_SUBJECT = "Проблема мониторингового потока";
     private static final String DEFAULT_RECOVERY_SUBJECT = "Восстановление мониторингового потока";
 
-    private final MonitoringEmailSender emailSender;
+    private final MonitoringNotificationSender notificationSender;
 
     public void sendAlert(
             MonitoringTaskDefinition definition,
@@ -25,7 +25,7 @@ public class MonitoringNotificationService {
             long actualCount,
             LocalDateTime checkTime
     ) {
-        String subject = params.getSubject() != null
+        String subject = params.getSubject() != null && !params.getSubject().isBlank()
                 ? params.getSubject()
                 : DEFAULT_ALERT_SUBJECT + ": " + definition.displayName();
 
@@ -52,7 +52,7 @@ public class MonitoringNotificationService {
                 definition.filters()
         );
 
-        emailSender.send(params.getRecipients(), subject, body);
+        notificationSender.send(params.getRecipients(), subject, body);
     }
 
     public void sendRecovery(
@@ -84,10 +84,10 @@ public class MonitoringNotificationService {
                 definition.filters()
         );
 
-        emailSender.send(
-                params.getRecipients(),
-                DEFAULT_RECOVERY_SUBJECT + ": " + definition.displayName(),
-                body
-        );
+        String subject = params.getSubject() != null && !params.getSubject().isBlank()
+                ? params.getSubject()
+                : DEFAULT_RECOVERY_SUBJECT + ": " + definition.displayName();
+
+        notificationSender.send(params.getRecipients(), subject, body);
     }
 }
