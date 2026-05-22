@@ -1,0 +1,75 @@
+пример создания бота:
+public static void main(String[] args) throw Exception {
+BotSystemConfig systemConfig = BotSystemConfig.Builder.newBuilder().withHost("указываем хост").withPort(указываем порт).withSecure(флаг безопасности).build();
+
+BotSystem system = BotSystem.createSystem(systemConfig);
+Bot bot = system.startBotWithToken("Название бота", "Токен бота").get();
+
+bot.messaging().onMessage(message -> {
+String response = "Вы сказали:" + message.getText();
+bot.messaging().sendText(message.getPeer(), response);
+System.out.println(response);
+});
+bot.awit();
+}
+
+модуль Users
+пример использования:
+public class CommandHandler extends AbstractCommandListener {
+private final Bot bot;
+
+public void start(CommandMessage message) {
+bot.users().get(message.getPeer()).thenAccept(userOptional -> {
+userOptional.ifPresent(user -> bot.users().findUserByName(user.getCustomerProfileEntity().getName().thenAccept(userOptional -> 
+bot.messaging().sendText(message.getPeer(), info(user))
+)
+);
+});
+}
+
+public CommandHandler(Bot bot) {
+this.bot=bot;
+commands.put("start, this::start);
+}
+
+public String ingfo(User user) {
+return "вот что нашел по пользователю:";
+}
+}
+
+Модуль Messaging
+пример кода для отправки сообщений:
+public static void main(String[] args) throw Exception {
+BotSystemConfig systemConfig = BotSystemConfig.Builder.newBuilder().withHost("указываем хост").withPort(указываем порт).withSecure(флаг безопасности).build();
+
+
+BotSystem system = BotSystem.createSystem(systemConfig);
+Bot bot = system.startBotWithToken("Название бота", "Токен бота").get();
+
+bot.messaging().onCommand(new CommandHandler(bot));
+List<BotCommand> commands = new ArrayList<>();
+commands.add(new BotCommand("start", "запуск бота"));
+commands.add(new BotCommand("reply", ""));
+bot.botProfileApi().updateBotCommands(comands);
+bot.await();
+}
+
+public class CommandHandler extends AbstractCommandListener {
+private final Bot bot;
+public final static HashMap<Integer, UUID> sendMessage = new HashMap<>();
+private void start(CommandMessage message) {
+bot.messaging().sendText(message.getPeer(), "Test").thenAccept(t -> { sendMessage.remove(message.getPeer().getId());
+sendMessage.put(message.getPeer().getId(), t);
+}
+private void reply(CommandMessage message) {
+bot.messaging().getMessageById(message.getMessageId()).thenAccept(respons -> { bot.messaging().reply(response.getPeer(), sendMessage.get(response.getPeer().getId()), "new test");
+});
+}
+
+public CommandsHandler(Bot bot) {
+this.bot = bot;
+commands.put("start, this::start);
+commands.put("reply", this::reply);
+}
+}
+

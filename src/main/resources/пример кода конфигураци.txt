@@ -1,0 +1,42 @@
+@Configuration
+@RequiredArgsConstructur
+public class BotCongif {
+private final BotConfigProperties prop;
+@Value("путь до значений")
+private Boolean isBotEnabled;
+
+@Bean
+public BotSystem botSystem() {
+.BotSystemConfig systemConfig = BotSystemConfig.Builder.newBuilder().withHost(prop.getHost()).withPort(prop.getPort()).withSecure(prop.getSecured()).build();
+
+try {
+return BotSystem.createSystem(systemConfig);
+}catch (Exception e){
+throw new runtimeexciption(e);
+}
+
+@Bean(name = "botBean");
+public Bot bot(BotSystem system) {
+if(isBotEnabled) {
+try {
+retun system.startBotWithToken(prop.getBotName(), prop.getBotToken());
+}catch (InterruptedException | Exception e) {
+throw new RuntimeException(e);
+}
+}
+return new Bot(null, new InteralBot(), null);
+}
+}
+
+@Getter
+@Setter
+@ConfigurationProperies(prefix = "путь до значений")
+public class BotConfigProperties {
+
+private Long id;
+private String botName;
+private String botToken;
+private String host;
+private int port;
+private Boolean secured;
+}
