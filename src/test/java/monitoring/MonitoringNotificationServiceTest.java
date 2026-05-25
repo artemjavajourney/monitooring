@@ -9,13 +9,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class MonitoringNotificationServiceTest {
 
     @Test
-    void sendAlertUsesCustomSubjectWhenSpecified() {
-        MonitoringTestSupport.RecordingEmailSender emailSender = new MonitoringTestSupport.RecordingEmailSender();
-        MonitoringNotificationService notificationService = new MonitoringNotificationService(emailSender);
+    void sendAlertFormatsBodyAndUsesRecipients() {
+        MonitoringTestSupport.RecordingNotificationSender sender = new MonitoringTestSupport.RecordingNotificationSender();
+        MonitoringNotificationService notificationService = new MonitoringNotificationService(sender);
         MonitoringTaskParameter params = new MonitoringTaskParameter();
         params.setMinEventCount(10);
         params.setRecipients(List.of("support-channel"));
-        params.setSubject("Custom alert subject");
         MonitoringPeriod period = new MonitoringPeriod(
                 LocalDateTime.of(2026, 5, 18, 8, 0),
                 LocalDateTime.of(2026, 5, 18, 9, 0)
@@ -29,18 +28,18 @@ class MonitoringNotificationServiceTest {
                 LocalDateTime.of(2026, 5, 18, 9, 0)
         );
 
-        assertEquals(1, emailSender.count());
-        assertEquals("Custom alert subject", emailSender.first().subject());
-        assertEquals(List.of("support-channel"), emailSender.first().recipients());
-        assertTrue(emailSender.first().body().contains("Mechanics"));
-        assertTrue(emailSender.first().body().contains("Ожидалось получить больше 10"));
-        assertTrue(emailSender.first().body().contains("По факту получено: 3"));
+        assertEquals(1, sender.count());
+        assertEquals(List.of("support-channel"), sender.first().recipients());
+        assertTrue(sender.first().body().contains("Mechanics"));
+        assertTrue(sender.first().body().contains("Ожидалось получить больше 10"));
+        assertTrue(sender.first().body().contains("По факту получено: 3"));
+        assertTrue(sender.first().body().contains("18.05.2026 09:00:00"));
     }
 
     @Test
-    void sendAlertUsesDefaultSubjectWithDisplayNameWhenCustomSubjectIsMissing() {
-        MonitoringTestSupport.RecordingEmailSender emailSender = new MonitoringTestSupport.RecordingEmailSender();
-        MonitoringNotificationService notificationService = new MonitoringNotificationService(emailSender);
+    void sendAlertIncludesTechnicalDetails() {
+        MonitoringTestSupport.RecordingNotificationSender sender = new MonitoringTestSupport.RecordingNotificationSender();
+        MonitoringNotificationService notificationService = new MonitoringNotificationService(sender);
         MonitoringTaskParameter params = new MonitoringTaskParameter();
         params.setMinEventCount(10);
         params.setRecipients(List.of("support-channel"));
@@ -57,16 +56,14 @@ class MonitoringNotificationServiceTest {
                 LocalDateTime.of(2026, 5, 18, 9, 0)
         );
 
-        assertEquals(1, emailSender.count());
-        assertTrue(emailSender.first().subject().contains("Проблема мониторингового потока"));
-        assertTrue(emailSender.first().subject().contains("Cases"));
-        assertTrue(emailSender.first().body().contains("CASES_MONITORING_TASK"));
+        assertEquals(1, sender.count());
+        assertTrue(sender.first().body().contains("CASES_MONITORING_TASK"));
     }
 
     @Test
     void sendRecoveryUsesRecoverySubjectAndBody() {
-        MonitoringTestSupport.RecordingEmailSender emailSender = new MonitoringTestSupport.RecordingEmailSender();
-        MonitoringNotificationService notificationService = new MonitoringNotificationService(emailSender);
+        MonitoringTestSupport.RecordingNotificationSender sender = new MonitoringTestSupport.RecordingNotificationSender();
+        MonitoringNotificationService notificationService = new MonitoringNotificationService(sender);
         MonitoringTaskParameter params = new MonitoringTaskParameter();
         params.setMinEventCount(10);
         params.setRecipients(List.of("support-channel"));
@@ -83,10 +80,9 @@ class MonitoringNotificationServiceTest {
                 LocalDateTime.of(2026, 5, 18, 11, 0)
         );
 
-        assertEquals(1, emailSender.count());
-        assertTrue(emailSender.first().subject().contains("Восстановление мониторингового потока"));
-        assertTrue(emailSender.first().subject().contains("ZOK_4"));
-        assertTrue(emailSender.first().body().contains("получение событий восстановлено"));
-        assertTrue(emailSender.first().body().contains("Получено событий: 11"));
+        assertEquals(1, sender.count());
+        assertTrue(sender.first().body().contains("получение событий восстановлено"));
+        assertTrue(sender.first().body().contains("Получено событий: 11"));
+        assertTrue(sender.first().body().contains("18.05.2026 11:00:00"));
     }
 }

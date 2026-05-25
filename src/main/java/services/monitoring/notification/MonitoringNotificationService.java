@@ -1,10 +1,13 @@
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
- * Формирует и отправляет alert/recovery уведомления.
+ * Формирует и отправляет alert/recovery уведомления в корпоративный чат.
  *
  * Здесь нет бизнес-решения "проблема или не проблема".
  * Этот сервис только отправляет письмо по команде TaskService.
@@ -13,10 +16,12 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class MonitoringNotificationService {
 
-    private static final String DEFAULT_ALERT_SUBJECT = "Проблема мониторингового потока";
-    private static final String DEFAULT_RECOVERY_SUBJECT = "Восстановление мониторингового потока";
+    private static final DateTimeFormatter MESSAGE_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 
-    private final MonitoringEmailSender emailSender;
+    private final MonitoringNotificationSender notificationSender;
+
+    @Value("${task.manager.monitoring.notification.recipients:}")
+    private List<String> configuredRecipients;
 
     public void sendAlert(
             MonitoringTaskDefinition definition,
@@ -25,10 +30,6 @@ public class MonitoringNotificationService {
             long actualCount,
             LocalDateTime checkTime
     ) {
-        String subject = params.getSubject() != null
-                ? params.getSubject()
-                : DEFAULT_ALERT_SUBJECT + ": " + definition.displayName();
-
         String body = """
                 Поток "%s" на момент проверки %s работает некорректно.
 
@@ -42,9 +43,9 @@ public class MonitoringNotificationService {
                 filterValue: %s
                 """.formatted(
                 definition.displayName(),
-                checkTime,
-                period.getFrom(),
-                period.getTo(),
+                formatDateTime(checkTime),
+                formatDateTime(period.getFrom()),
+                formatDateTime(period.getTo()),
                 params.getMinEventCount(),
                 actualCount,
                 definition.taskType(),
@@ -52,7 +53,7 @@ public class MonitoringNotificationService {
                 definition.filters()
         );
 
-        emailSender.send(params.getRecipients(), subject, body);
+        notificationSender.send(resolveRecipients(params), body);
     }
 
     public void sendRecovery(
@@ -75,19 +76,27 @@ public class MonitoringNotificationService {
                 filterValue: %s
                 """.formatted(
                 definition.displayName(),
-                checkTime,
-                period.getFrom(),
-                period.getTo(),
+                formatDateTime(checkTime),
+                formatDateTime(period.getFrom()),
+                formatDateTime(period.getTo()),
                 actualCount,
                 definition.taskType(),
                 definition.counterType(),
                 definition.filters()
         );
 
-        emailSender.send(
-                params.getRecipients(),
-                DEFAULT_RECOVERY_SUBJECT + ": " + definition.displayName(),
-                body
-        );
+        notificationSender.send(resolveRecipients(params), body);
+    }
+
+    private List<String> resolveRecipients(MonitoringTaskParameter params) {
+        if (configuredRecipients != null && !configuredRecipients.isEmpty()) {
+            return configuredRecipients;
+        }
+
+        return params.getRecipients();
+    }
+
+    private String formatDateTime(LocalDateTime dateTime) {
+        return dateTime.format(MESSAGE_DATE_TIME_FORMATTER);
     }
 }
