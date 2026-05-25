@@ -102,12 +102,12 @@ final class MonitoringTestSupport {
         }
     }
 
-    static final class RecordingEmailSender implements MonitoringEmailSender {
+    static final class RecordingNotificationSender implements MonitoringNotificationSender {
         private final List<SentMessage> messages = new ArrayList<>();
 
         @Override
-        public void send(List<String> recipients, String subject, String body) {
-            messages.add(new SentMessage(recipients, subject, body));
+        public void send(List<String> recipients, String body) {
+            messages.add(new SentMessage(recipients, body));
         }
 
         int count() {
@@ -123,7 +123,7 @@ final class MonitoringTestSupport {
         }
     }
 
-    record SentMessage(List<String> recipients, String subject, String body) {
+    record SentMessage(List<String> recipients, String body) {
     }
 
     static final class StubMonitoringEventCounterRepository implements MonitoringEventCounterRepository {
